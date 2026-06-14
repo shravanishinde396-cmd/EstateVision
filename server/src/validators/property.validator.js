@@ -1,0 +1,28 @@
+import joi from 'joi';
+
+export const propertySchema = joi.object({
+  title: joi.string().required().trim().max(150),
+  description: joi.string().required().max(5000),
+  propertyType: joi.string().valid('APARTMENT', 'HOUSE', 'VILLA', 'STUDIO', 'PENTHOUSE', 'COMMERCIAL', 'PLOT', 'PG').required(),
+  furnishingStatus: joi.string().valid('FURNISHED', 'SEMI_FURNISHED', 'UNFURNISHED').required(),
+  address: joi.string().required(),
+  city: joi.string().required(),
+  area: joi.string().required(),
+  state: joi.string().required(),
+  pincode: joi.string().required(),
+  coordinates: joi.array().items(joi.number()).length(2).default([0, 0]),
+  bedrooms: joi.number().integer().min(0).max(20).required(),
+  bathrooms: joi.number().integer().min(0).required(),
+  areaSqft: joi.number().positive().required(),
+  floor: joi.number().integer().optional(),
+  totalFloors: joi.number().integer().optional(),
+  ageYears: joi.number().integer().min(0).default(0),
+  facing: joi.string().valid('North', 'South', 'East', 'West', 'NE', 'NW', 'SE', 'SW').optional(),
+  rentAmount: joi.number().positive().required(),
+  depositAmount: joi.number().positive().required(),
+  maintenanceCharges: joi.number().min(0).default(0),
+  amenities: joi.array().items(joi.string()).default([]),
+  parkingAvailable: joi.boolean().default(false),
+  petFriendly: joi.boolean().default(false),
+  availableFrom: joi.date().optional(),
+});

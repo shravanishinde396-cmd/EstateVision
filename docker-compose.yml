@@ -1,0 +1,50 @@
+# docker-compose.yml
+version: '3.9'
+services:
+
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports: ["27017:27017"]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: proppulse
+    volumes: [mongo_data:/data/db]
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports: ["6379:6379"]
+    command: redis-server --appendonly yes
+    volumes: [redis_data:/data]
+
+  server:
+    build: ./server
+    restart: unless-stopped
+    ports: ["5000:5000"]
+    depends_on: [mongo, redis]
+    environment:
+      NODE_ENV: development
+      MONGODB_URI: mongodb://admin:password@mongo:27017/proppulse?authSource=admin
+      REDIS_URL: redis://redis:6379
+    volumes: [./server:/app, /app/node_modules]
+    command: npm run dev
+
+  ai-service:
+    build: ./ai-service
+    restart: unless-stopped
+    ports: ["8001:8001"]
+    volumes: [./ai-service:/app]
+
+  client:
+    build: ./client
+    restart: unless-stopped
+    ports: ["3000:3000"]
+    depends_on: [server]
+    volumes: [./client:/app, /app/node_modules]
+    command: npm run dev
+
+volumes:
+  mongo_data:
+  redis_data:

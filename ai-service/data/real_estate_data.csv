@@ -1,0 +1,4 @@
+city,area,area_sqft,bedrooms,bathrooms,property_type,furnishing,age_years,rent_amount,deposit_amount
+mumbai,bandra,1200,2,2,APARTMENT,FURNISHED,5,85000,250000
+bangalore,whitefield,1500,3,3,APARTMENT,SEMI_FURNISHED,2,42000,150000
+delhi,saket,1100,2,2,APARTMENT,UNFURNISHED,8,30000,90000

@@ -1,0 +1,44 @@
+{
+  "name": "estatevision-server",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev":   "nodemon server.js",
+    "start": "node server.js",
+    "seed":  "node src/scripts/seed.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^8.0.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "razorpay": "^2.9.2",
+    "resend": "^2.0.0",
+    "cloudinary": "^1.41.0",
+    "multer": "^1.4.5-lts.1",
+    "multer-storage-cloudinary": "^4.0.0",
+    "socket.io": "^4.7.2",
+    "bull": "^4.12.0",
+    "node-cron": "^3.0.3",
+    "express-rate-limit": "^7.1.5",
+    "rate-limit-redis": "^4.2.0",
+    "ioredis": "^5.3.2",
+    "helmet": "^7.1.0",
+    "cors": "^2.8.5",
+    "express-mongo-sanitize": "^2.2.0",
+    "xss-clean": "^0.1.4",
+    "hpp": "^0.2.3",
+    "compression": "^1.7.4",
+    "morgan": "^1.10.0",
+    "cookie-parser": "^1.4.6",
+    "winston": "^3.11.0",
+    "joi": "^17.11.0",
+    "axios": "^1.6.2",
+    "dotenv": "^16.3.1",
+    "date-fns": "^3.0.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
