@@ -28,3 +28,12 @@ export const analyzeArea = async (req, res) => {
     return sendError(res, 500, 'AI Area analysis failed', err.response?.data || err.message);
   }
 };
+
+export const generateAdvice = async (req, res) => {
+  try {
+    const advice = await aiService.generateAdvice(req.body);
+    return sendSuccess(res, 200, 'NVIDIA AI Advisor report generated', advice);
+  } catch (err) {
+    return sendError(res, 500, 'NVIDIA AI Advisor failed', err.response?.data || err.message);
+  }
+};

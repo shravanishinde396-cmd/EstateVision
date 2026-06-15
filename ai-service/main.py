@@ -1,5 +1,6 @@
 # ai-service/main.py
 import os
+import httpx
 import numpy as np
 import pandas as pd
 from fastapi import FastAPI, HTTPException
@@ -42,6 +43,18 @@ class ROIInput(BaseModel):
     loan_amount:          Optional[float] = 0
     interest_rate:        Optional[float] = 8.5
     loan_tenure_years:    Optional[int]   = 20
+
+class AdviceInput(BaseModel):
+    title:           str
+    city:            str
+    area:            str
+    rent_amount:     float = Field(gt=0)
+    deposit_amount:  float = Field(ge=0)
+    area_sqft:       float = Field(gt=0)
+    bedrooms:        int   = Field(ge=0)
+    bathrooms:       int   = Field(ge=1)
+    property_type:   str
+    description:     Optional[str] = ""
 
 # ── Price Prediction ──────────────────────────────────────────
 @app.post("/predict/price")
@@ -144,6 +157,92 @@ async def calculate_roi(data: ROIInput):
 async def analyze_area(city: str, area: str):
     result = analyzer.analyze(city, area)
     return result
+
+# ── NVIDIA AI Advisor ─────────────────────────────────────────
+@app.post("/generate/advice")
+async def generate_advice(data: AdviceInput):
+    nvidia_api_key = os.getenv("NVIDIA_API_KEY")
+    
+    # Prompt construction
+    prompt = (
+        f"Analyze the following Indian real estate property and provide a professional, structured investment advice report in clean markdown format.\n\n"
+        f"Property Details:\n"
+        f"- Title: {data.title}\n"
+        f"- Location: {data.area}, {data.city}\n"
+        f"- Size: {data.area_sqft} Sqft\n"
+        f"- Configuration: {data.bedrooms} BHK, {data.bathrooms} Bathrooms\n"
+        f"- Type: {data.property_type}\n"
+        f"- Monthly Rent: ₹{data.rent_amount:,.2f}\n"
+        f"- Security Deposit: ₹{data.deposit_amount:,.2f}\n"
+        f"- Description: {data.description}\n\n"
+        f"Your response should be in markdown and include:\n"
+        f"1. **Executive Summary**: A brief verdict on this property.\n"
+        f"2. **Market Value & Rent Analysis**: Estimate if the rent is fair for a {data.area_sqft} sqft property in {data.area}.\n"
+        f"3. **Investment Potential**: ROI insights and yield prospects.\n"
+        f"4. **Pros & Cons**: 3 key strengths and 3 potential risks or drawbacks.\n"
+        f"5. **Strategic Advice**: Recommendations for landlords (optimizing rent, tenancy term) or tenants.\n"
+        f"Use clean, professional formatting with emojis, bullet points, and sections."
+    )
+    
+    if not nvidia_api_key:
+        # Graceful mock fallback if API key is not configured
+        mock_response = (
+            f"### 📋 NVIDIA AI Investment Analysis: {data.title}\n\n"
+            f"> **Status**: *[Demo Mode]* To connect this analysis to a live model, please set the `NVIDIA_API_KEY` environment variable.\n\n"
+            f"#### 1. Executive Summary\n"
+            f"The property located in **{data.area}, {data.city}** is a highly desirable {data.bedrooms} BHK {data.property_type}. At a monthly rent of **₹{data.rent_amount:,.2f}**, it represents a standard market-rate opportunity with a rental yield of approximately **{((data.rent_amount * 12) / (data.rent_amount * 250)) * 100:.2f}%** based on standard acquisition rules of thumb.\n\n"
+            f"#### 2. Market Value & Rent Analysis\n"
+            f"- **Estimated Rent per Sqft**: ₹{data.rent_amount / data.area_sqft:.2f}/sqft. This aligns closely with average rates in the {data.area} micro-market.\n"
+            f"- **Deposit Multiplier**: {data.deposit_amount / data.rent_amount:.1f}x monthly rent. This is within the standard 2-6x range for {data.city}.\n\n"
+            f"#### 3. Investment Potential\n"
+            f"- **Rental Yield**: Strong stable cash flow. The configuration ({data.bedrooms} BHK) is highly sought after by young professionals and families.\n"
+            f"- **Capital Appreciation**: {data.area} is experiencing a robust 6-8% annual appreciation due to upcoming infrastructure developments.\n\n"
+            f"#### 4. Pros & Cons\n"
+            f"**Pros:**\n"
+            f"* 🏢 **Optimal Layout**: Balanced {data.bedrooms} BHK configuration maximizes target tenant pool.\n"
+            f"* 📍 **High-Demand Location**: {data.area} is a prime micro-market in {data.city}.\n"
+            f"* 💰 **Fair Deposit**: Deposit terms are competitive and reasonable.\n\n"
+            f"**Cons:**\n"
+            f"* 🚗 **Potential Parking Issues**: Common in high-density areas of {data.area}.\n"
+            f"* 🛠️ **Maintenance Charges**: Need to verify if the maintenance fees are inclusive or exclusive of the monthly rent.\n"
+            f"* 📈 **High Competition**: Many similar units are available in the vicinity.\n\n"
+            f"#### 5. Strategic Advice\n"
+            f"* **For Owners**: Focus on long-term corporate leases (12-24 months) to minimize vacancy risk.\n"
+            f"* **For Tenants**: Negotiate to check if the maintenance and club house amenities are covered within the current rent."
+        )
+        return {"advice": mock_response, "model": "Mock-NVIDIA-Llama-3.1-70b (Fallback)"}
+        
+    try:
+        headers = {
+            "Authorization": f"Bearer {nvidia_api_key}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": "meta/llama-3.1-70b-instruct",
+            "messages": [
+                {"role": "system", "content": "You are a professional real estate investment analyst specializing in the Indian property market. Provide highly detailed, structured, and insightful real estate advice in Markdown format."},
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": 0.2,
+            "max_tokens": 1024
+        }
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://integrate.api.nvidia.com/v1/chat/completions",
+                json=payload,
+                headers=headers,
+                timeout=30.0
+            )
+            
+            if response.status_code != 200:
+                raise HTTPException(status_code=response.status_code, detail=f"NVIDIA API Error: {response.text}")
+                
+            result = response.json()
+            advice_content = result["choices"][0]["message"]["content"]
+            return {"advice": advice_content, "model": "NVIDIA Llama 3.1 70B Instruct"}
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate advice from NVIDIA API: {str(e)}")
 
 @app.get("/")
 async def root():

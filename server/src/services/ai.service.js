@@ -21,4 +21,9 @@ export const aiService = {
     const { data } = await aiClient.get('/analyze/area', { params: { city, area } });
     return data;
   },
+
+  generateAdvice: async (adviceData) => {
+    const { data } = await aiClient.post('/generate/advice', adviceData);
+    return data;
+  },
 };
