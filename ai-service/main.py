@@ -145,6 +145,14 @@ async def analyze_area(city: str, area: str):
     result = analyzer.analyze(city, area)
     return result
 
+@app.get("/")
+async def root():
+    return {
+        "message": "Welcome to EstateVision AI Service.",
+        "documentation": "/docs",
+        "status": "healthy"
+    }
+
 @app.get("/health")
 async def health():
     return {"status": "healthy", "service": "EstateVision"}
