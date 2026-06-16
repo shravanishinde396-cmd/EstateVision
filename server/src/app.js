@@ -26,8 +26,31 @@ const app = express();
 
 // ── Security Middleware ───────────────────────────────────
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+];
+if (config.clientUrl) {
+  allowedOrigins.push(config.clientUrl);
+}
+
 app.use(cors({
-  origin: config.clientUrl,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, or postman)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin matches allowed list or vercel.app preview domains
+    const isAllowed = allowedOrigins.includes(origin) || 
+                      origin.endsWith('.vercel.app') || 
+                      /^http:\/\/localhost:\d+$/.test(origin);
+                      
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
