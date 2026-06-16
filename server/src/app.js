@@ -24,6 +24,11 @@ import config             from './config/env.js';
 
 const app = express();
 
+// Trust proxy in production (e.g. on Render/Vercel)
+if (config.env === 'production') {
+  app.set('trust proxy', 1);
+}
+
 // ── Security Middleware ───────────────────────────────────
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
