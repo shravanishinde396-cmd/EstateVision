@@ -34,11 +34,6 @@ services:
         generateValue: true
       - key: JWT_REFRESH_SECRET
         generateValue: true
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: estatevision-redis
-          property: connectionString
       - key: AI_SERVICE_URL
         fromService:
           type: web
@@ -59,8 +54,3 @@ services:
       - key: RESEND_API_KEY
         sync: false
 
-# 3. Redis Instance for Cron Jobs, BullMQ & Rate Limiter
-redis:
-  name: estatevision-redis
-  plan: free
-  ipAllowList: [] # Allow access from Render services only (secure default)

@@ -1,7 +1,5 @@
 // server/src/middleware/rateLimit.middleware.js
 import rateLimit from 'express-rate-limit';
-import RedisStore from 'rate-limit-redis';
-import { redisClient } from '../config/redis.js';
 import { sendError } from '../utils/response.util.js';
 import config from '../config/env.js';
 
@@ -13,7 +11,6 @@ export const apiLimiter = rateLimit({
   max:              100,
   standardHeaders:  true,
   legacyHeaders:    false,
-  store: isDev ? undefined : new RedisStore({ sendCommand: (...args) => redisClient.call(...args) }),
   handler: (req, res) => sendError(res, 429, 'Too many requests. Please slow down.'),
   skip: () => isDev,
 });
@@ -22,7 +19,6 @@ export const apiLimiter = rateLimit({
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max:      10,
-  store: isDev ? undefined : new RedisStore({ sendCommand: (...args) => redisClient.call(...args) }),
   handler: (req, res) => sendError(res, 429, 'Too many login attempts. Try again in 15 minutes.'),
   skip: () => isDev,
 });

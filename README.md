@@ -11,7 +11,6 @@ EstateVision is a complete enterprise SaaS platform built with the MERN Stack an
 ### Backend (`server/`)
 *   **Runtime:** Node.js v20 (Express)
 *   **Database:** MongoDB v7 (via Mongoose ODM) with geospatial querying & indexing
-*   **Cache & Queue:** Redis v7 (via Bull MQ for background jobs and cron queues)
 *   **Payment Gateway:** Razorpay API (HMAC Signature Verification + webhook endpoints)
 *   **Emails:** Resend API (HTML transactional receipts)
 *   **WebSockets:** Socket.io (real-time notification triggers and support messaging)
@@ -39,7 +38,7 @@ EstateVision is a complete enterprise SaaS platform built with the MERN Stack an
 3.  Python 3.11 (if running AI microservice locally without Docker).
 
 ### Option 1: Run with Docker Compose (Recommended)
-Spin up the entire stack including database, cache, backend, frontend, and AI microservice:
+Spin up the entire stack including database, backend, frontend, and AI microservice:
 
 ```bash
 docker-compose up --build

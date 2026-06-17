@@ -20,7 +20,6 @@ const envVarsSchema = joi.object({
   RAZORPAY_WEBHOOK_SECRET: joi.string().required(),
   RESEND_API_KEY: joi.string().required(),
   EMAIL_FROM: joi.string().default('EstateVision <noreply@estatevision.ai>'),
-  REDIS_URL: joi.string().required(),
   AI_SERVICE_URL: joi.string().required(),
 }).unknown().required();
 
@@ -55,6 +54,5 @@ export default {
     apiKey: envVars.RESEND_API_KEY,
     from: envVars.EMAIL_FROM,
   },
-  redisUrl: envVars.REDIS_URL,
   aiServiceUrl: envVars.AI_SERVICE_URL,
 };
